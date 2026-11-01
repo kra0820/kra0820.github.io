@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KRA | MUSIC</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#0b0d16;color:white;font-family:Arial,sans-serif}
+header{padding:26px 20px;border-bottom:1px solid #333}
+header a{color:white;text-decoration:none;font-weight:bold;letter-spacing:3px}
+main{max-width:900px;margin:auto;padding:48px 20px}
+h1{font-size:42px;letter-spacing:6px}
+p{color:#b8bfd0}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:28px;margin-top:40px}
+.card{background:#171a27;border:1px solid #333747;border-radius:14px;overflow:hidden}
+.card img{width:100%;aspect-ratio:1;object-fit:cover}
+.info{padding:18px}
+h2{font-size:18px;line-height:1.5}
+.links{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+.links a{padding:11px 13px;background:#d9e3ff;color:#101525;text-decoration:none;border-radius:6px;font-size:13px;font-weight:bold}
+.links a.apple{background:#f4cbd8}
+#status{margin-top:24px}
+</style>
+</head>
+<body>
+<header><a href="./">KRA.</a></header>
+<main>
+<h1>MUSIC</h1>
+<p>Two voices. One story.</p>
+<div id="status">楽曲を読み込み中...</div>
+<div id="releases" class="grid"></div>
+</main>
+<script>
+async function loadMusic(){
+ const status=document.getElementById('status');
+ const grid=document.getElementById('releases');
+ try{
+  const response=await fetch('./music.json?ts='+Date.now());
+  if(!response.ok)throw new Error('取得失敗');
+  const songs=await response.json();
+  if(!Array.isArray(songs)||!songs.length)throw new Error('楽曲なし');
+  status.textContent='';
+  for(const song of songs){
+   const card=document.createElement('article');
+   card.className='card';
+   const img=document.createElement('img');
+   img.src=song.artwork||'';
+   img.alt=song.title||'KRA';
+   img.loading='lazy';
+   const info=document.createElement('div');
+   info.className='info';
+   const title=document.createElement('h2');
+   title.textContent=song.title||'Untitled';
+   const links=document.createElement('div');
+   links.className='links';
+   for(const [label,url,cls] of [
+    ['Spotify',song.spotify,''],
+    ['Apple Music',song.appleMusic,'apple']
+   ]){
+    if(!url)continue;
+    const a=document.createElement('a');
+    a.textContent=label;
+    a.href=url;
+    a.className=cls;
+    a.target='_blank';
+    a.rel='noopener noreferrer';
+    links.appendChild(a);
+   }
+   info.append(title,links);
+   card.append(img,info);
+   grid.appendChild(card);
+  }
+ }catch(e){
+  status.textContent='楽曲情報を読み込めませんでした。時間をおいて再読み込みしてください。';
+ }
+}
+loadMusic();
+</script>
+</body>
+</html>
